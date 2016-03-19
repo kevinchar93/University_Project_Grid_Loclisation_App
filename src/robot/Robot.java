@@ -55,7 +55,6 @@ public class Robot {
 			
 			try {
 				readStr = _serialData.take();
-				readStr = PApplet.trim(readStr);
 			} catch (InterruptedException e) {
 				return false;
 			}
@@ -68,8 +67,6 @@ public class Robot {
 			else if (stageSignalB.equals(readStr)) {
 				connected = true;
 			}
-			
-			_parent.delay(100);
 		}
 		
 		_port.clear();
@@ -118,11 +115,22 @@ public class Robot {
 		_port.write(instruction.toString());
 		
 		// get verification response
-		String response = getResponse();
+		String response;
+		try {
+			response = _serialData.take();
+		} catch (InterruptedException e) {
+			return false;
+		}
+		
 		if (INS_OK.equals(response)) {
 			
 			// get completion response
-			response = getResponse();
+			try {
+				response = _serialData.take();
+			} catch (InterruptedException e) {
+				return false;
+			}
+			
 			if (INS_DONE.equals(response)) {
 				return true;
 			}
@@ -131,35 +139,6 @@ public class Robot {
 		return false;
 	}
 	
-	public String getResponse() {
-		
-		// check to make sure we have Bluetooth connection to robot
-		if (!isConnected()) {
-			PApplet.println("Can't send command no connection");
-			return INS_ERR_CONNECT;
-		}
-		
-		StringBuffer buffer = new StringBuffer();
-		boolean 	 keepBuilding = true;
-		char 		 currChar;
-		
-		// keep looping until the end of string character
-		while (keepBuilding) {
-			
-			// if the port has data read the character, and check for the EOS char
-			if (_port.available() > 0) {
-				currChar = _port.readChar();
-				if (';' == currChar) {
-					keepBuilding = false;
-				}
-				else {
-					buffer.append(currChar);
-				}
-			}
-		}
-		
-		return buffer.toString();
-	}
 	
 	public boolean isMovePossible (int gridSpaces, Direction dir) {
 		
@@ -170,7 +149,7 @@ public class Robot {
 		}
 		
 		// calculate the distance of the grid spaces we need to move
-		int distanceToTravel = _gridSize * gridSpaces;
+		final int DIST_TO_TRAVEL = _gridSize * gridSpaces;
 		int measurementHeading = 0;
 		Instruction instruction;
 		
@@ -189,7 +168,7 @@ public class Robot {
 				break;
 		}
 		
-		instruction = new Instruction(InstructionSet.MOVE_FORWARD, 35, false, 424);
+		instruction = new Instruction(InstructionSet.LIDAR_AT_ANGLE, measurementHeading, false, 0);
 		
 		_port.write(instruction.toString());
 		
@@ -222,13 +201,22 @@ public class Robot {
 				PApplet.println(response);
 				
 				// parse the data and compare against distanceToTravel
-				//System.out.println(response);
+				String[] measurement = PApplet.splitTokens(response, ":"); 
+				int distAvail = Integer.parseInt(measurement[0]);
+				float heading = Float.parseFloat(measurement[1]);
 				
+				// if distance we want to travel is more than distance available, we cannot move
+				if (DIST_TO_TRAVEL > distAvail) {
+					return false;
+				}
+				else {
+					// otherwise the move is possible
+					return true;
+				}
 			}
 		}
 		
-		// if the grid space distance is greater than the space available can't move
-		
+		// did not receive and okay or data available message , return false
 		return false;
 	}
 	

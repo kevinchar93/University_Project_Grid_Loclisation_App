@@ -17,7 +17,7 @@ public class CoreUI extends PApplet {
 		Robot robot = new Robot(this, 10, 10, 10.0f, serialData);
 		robot.connect("/dev/tty.HC-05-DevB", 9600);
 		
-		robot.isMovePossible(4, Direction.LEFT);
+		robot.isMovePossible(4, Direction.RIGHT);
 	}
 	
 	public void draw() {
@@ -48,7 +48,7 @@ public class CoreUI extends PApplet {
 			
 			if (';' == tempChar){
 				finishStrBuild = true;
-				serialData.offer(bufferString.toString());
+				serialData.offer(PApplet.trim(bufferString.toString()));
 			}
 			else {
 				bufferString.append(tempChar);
