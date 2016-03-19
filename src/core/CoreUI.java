@@ -2,6 +2,7 @@ package core;
 
 import java.util.concurrent.*;
 
+import map.Map;
 import processing.core.PApplet;
 import processing.serial.Serial;
 import robot.*;
@@ -20,10 +21,23 @@ public class CoreUI extends PApplet {
 	
 	public void setup() {
 		
-		Robot robot = new Robot(this, Grid_Size_MM, Wall_Distance_MM, Wall_Threshold_Percent, serialData);
-		robot.connect("/dev/tty.HC-05-DevB", 9600);
+		//Robot robot = new Robot(this, Grid_Size_MM, Wall_Distance_MM, Wall_Threshold_Percent, serialData);
+		//robot.connect("/dev/tty.HC-05-DevB", 9600);
+		int[] doors = {1, 2};
+		Map map = new Map(5, doors);
+		System.out.println(map);
 		
-		System.out.println(robot.checkForDoor(Direction.RIGHT));
+		map.setSensorModel(0.6, 0.2);
+		try {
+			map.setMotionModel(0.8, 0.1, 0.1);
+		} catch (Exception e) {
+			System.out.println("Probabilities don't add upto one!");
+		}
+		
+		map.sensorUpdate(true);
+		System.out.println(map);
+		map.motionUpdate(2, Direction.LEFT);
+		System.out.println(map);
 	}
 	
 	public void draw() {
