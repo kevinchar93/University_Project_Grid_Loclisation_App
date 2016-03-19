@@ -10,7 +10,9 @@ public class Robot {
 	private Serial _port;
 	private int _gridSize;
 	private int _wallDistance;
+	private float _wallThreshold;
 	private PApplet _parent;
+	private boolean _connected = false;
 	BlockingQueue<String> _serialData;
 	
 	private final String INS_OK = "INS_OK";
@@ -23,6 +25,7 @@ public class Robot {
 		_parent = parent;
 		_gridSize = gridSize;
 		_wallDistance = wallDistance;
+		_wallThreshold = threshold;
 		_serialData = serialData;
 	}
 	
@@ -71,12 +74,17 @@ public class Robot {
 		
 		_port.clear();
 		_serialData.clear();
+		_connected = true;
 		PApplet.println("Connected");
 		return true;
 	}
 	
 	
 	public boolean isConnected() {
+		if (false == _connected)
+		{
+			return false;
+		}
 		return _port.active();
 	}
 
@@ -109,7 +117,6 @@ public class Robot {
 				instructionType = InstructionSet.MOVE_BACKWARD;
 				break;
 		}
-		
 		instruction = new Instruction(instructionType, gridSpaces, true, _gridSize);
 		
 		_port.write(instruction.toString());
@@ -135,12 +142,11 @@ public class Robot {
 				return true;
 			}
 		}
-		
 		return false;
 	}
 	
 	
-	public boolean isMovePossible (int gridSpaces, Direction dir) {
+	private boolean isMovePossible (int gridSpaces, Direction dir) {
 		
 		// check to make sure we have Bluetooth connection to robot
 		if (!isConnected()) {
@@ -153,8 +159,7 @@ public class Robot {
 		int measurementHeading = 0;
 		Instruction instruction;
 		
-		// get the distance left of the map in the given direction
-		// create the instruction object
+		// get the distance remaining of the map in the given direction
 		switch (dir) {
 		
 			case LEFT :
@@ -167,7 +172,8 @@ public class Robot {
 				measurementHeading = 180;
 				break;
 		}
-		
+
+		// create the instruction object
 		instruction = new Instruction(InstructionSet.LIDAR_AT_ANGLE, measurementHeading, false, 0);
 		
 		_port.write(instruction.toString());
@@ -179,16 +185,15 @@ public class Robot {
 		} catch (InterruptedException e) {
 			return false;
 		}
-		PApplet.println(response);
+
 		if (INS_OK.equals(response)) {
 			
-			// check for completion, a signal saying data is ready to be read
+			// check for completion which is a signal saying data is ready to be read
 			try {
 				response = _serialData.take();
 			} catch (InterruptedException e) {
 				return false;
 			}
-			PApplet.println(response);
 			
 			if (INS_DATA_AVAIL.equals(response)) {
 				
@@ -198,7 +203,6 @@ public class Robot {
 				} catch (InterruptedException e) {
 					return false;
 				}
-				PApplet.println(response);
 				
 				// parse the data and compare against distanceToTravel
 				String[] measurement = PApplet.splitTokens(response, ":"); 
@@ -220,17 +224,77 @@ public class Robot {
 		return false;
 	}
 	
-	public boolean checkForDoor(Direction sideDoorIsOn) {
+	
+	public String checkForDoor(Direction sideDoorIsOn) {
 		
-		// take a measurement at the given heading
+		int measurementHeading = 0;
+		final String DOOR_DETECTED = "DOOR";
+		final String NO_DOOR_DETECTED = "NO_DOOR";
+		final String ERROR = "ERROR";
 		
-		// check to see if measurement is over the threshold
 		
-		// if the measurement is over the threshold a door is present
+		// take a measurement at the side the door is on
+		switch (sideDoorIsOn) {
 		
-		return false;
+			case LEFT :
+				// left so get distance on left side, 270 degrees
+				measurementHeading = 270;
+				break;
+				
+			case RIGHT:
+				// right so get distance right, 90 degrees
+				measurementHeading = 90;
+				break;
+		}
+
+		// create and send instruction
+		Instruction instruction = new Instruction(InstructionSet.LIDAR_AT_ANGLE, measurementHeading, false, 0);
+		_port.write(instruction.toString());
+		
+		// get response
+		String response;
+		try {
+			response = _serialData.take();
+		} catch (InterruptedException e) {
+			return ERROR+"Fail to get okay response";
+		}
+
+		// check message was received okay and is valid
+		if (INS_OK.equals(response)) {
+			
+			// get response
+			try {
+				response = _serialData.take();
+			} catch (InterruptedException e) {
+				return ERROR+" Fail to get completion response";
+			}
+			
+			// check for completion which is a signal saying data is ready to be read
+			if (INS_DATA_AVAIL.equals(response)) {
+				
+				// read the data created by the robot
+				try {
+					response = _serialData.take();
+				} catch (InterruptedException e) {
+					return ERROR+" Fail to read measure data";
+				}
+				
+				// parse the data and compare against the _wallDistance
+				String[] measurement = PApplet.splitTokens(response, ":"); 
+				final int dist = Integer.parseInt(measurement[0]);
+				final float heading = Float.parseFloat(measurement[1]);
+				System.out.println(dist);
+				// check to see if measurement is over the threshold, meaning a door is present
+				if ((10*dist) > (_wallDistance *= _wallThreshold)) {
+					return DOOR_DETECTED;
+				}
+				else {
+					// otherwise no door is present (next to wall)
+					return NO_DOOR_DETECTED;
+				}
+			}
+		}
+		
+		return ERROR+" ERR response received";
 	}
-
 }
-
- ;

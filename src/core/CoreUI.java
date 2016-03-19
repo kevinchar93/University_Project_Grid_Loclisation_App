@@ -8,16 +8,22 @@ import robot.*;
 
 public class CoreUI extends PApplet {
 	
+	/* Details about the environment the robot is in */
+	private int Grid_Size_MM = 300;
+	private int Wall_Distance_MM = 180;
+	private float Wall_Threshold_Percent = 1.2f;
+	/* ----------------------------------------------*/
+	
 	public void settings() {
 		
 	}
 	
 	public void setup() {
 		
-		Robot robot = new Robot(this, 10, 10, 10.0f, serialData);
+		Robot robot = new Robot(this, Grid_Size_MM, Wall_Distance_MM, Wall_Threshold_Percent, serialData);
 		robot.connect("/dev/tty.HC-05-DevB", 9600);
 		
-		robot.isMovePossible(4, Direction.RIGHT);
+		System.out.println(robot.checkForDoor(Direction.RIGHT));
 	}
 	
 	public void draw() {
@@ -28,10 +34,11 @@ public class CoreUI extends PApplet {
 		
 	}
 	
-	/* Information related to string building and queue creation */
+	/* Information related to string building from the serial port and queue creation */
 	private BlockingQueue<String> serialData = new LinkedBlockingQueue<>(25);
 	private StringBuffer bufferString;
 	private boolean finishStrBuild = true;
+	/* -------------------------------------------------------------------------------*/
 	
 	public void serialEvent(Serial port) {
 		
