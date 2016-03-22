@@ -122,9 +122,19 @@ public class Map {
 		return "[ "+joiner.toString()+" ]";
 	}
 	
+	public float[] getProbabilityList() {
+		
+		float[] values = new float[_grid.size()];
+		
+		for (int i = 0; i < _grid.size(); i++) {
+			values[i] = (float) _grid.get(i)._belief;
+		}
+		
+		return values;
+	}
+	
 	
 	public static int mod(int numA, int numB) {
 		return (numA % numB + numB) % numB;
 	}
-	
 }
