@@ -45,20 +45,21 @@ public class Robot {
 			_port = new Serial(_parent, port, baudRate);
 		}
 		catch (Exception e) {
-			PApplet.println("Failed to open port");
+			System.out.println("Failed to open port");
 			return false;
 		}
 
 		while (!connected) {
 
 			if ((_parent.millis() - beginTime) > TIMEOUT_VAL) {
-				PApplet.println("Connection attempt timed out");
+				System.out.println("Connection attempt timed out");
 				return false;
 			}
 			
 			try {
 				readStr = _serialData.take();
 			} catch (InterruptedException e) {
+				System.out.println("Connection error: InterruptedException");
 				return false;
 			}
 			
@@ -75,7 +76,7 @@ public class Robot {
 		_port.clear();
 		_serialData.clear();
 		_connected = true;
-		PApplet.println("Connected");
+		System.out.println("Connected");
 		return true;
 	}
 	
@@ -96,13 +97,13 @@ public class Robot {
 		
 		// check to make sure we have Bluetooth connection to robot
 		if (!isConnected()) {
-			PApplet.println("Can't send command no connection");
+			System.out.println("Can't send command no connection");
 			return false;
 		}
 		
 		// check if the move is possible
 		if (!isCyclic && !isMovePossible(gridSpaces, dir)) {
-			PApplet.println("Failed to move, not enough space in the map to move into");
+			System.out.println("Failed to move, not enough space in the map to move into");
 			return false;
 		}
 		
@@ -126,6 +127,7 @@ public class Robot {
 		try {
 			response = _serialData.take();
 		} catch (InterruptedException e) {
+			System.out.println("Connection error: InterruptedException");
 			return false;
 		}
 		
@@ -135,6 +137,7 @@ public class Robot {
 			try {
 				response = _serialData.take();
 			} catch (InterruptedException e) {
+				System.out.println("Connection error: InterruptedException");
 				return false;
 			}
 			
@@ -150,7 +153,7 @@ public class Robot {
 		
 		// check to make sure we have Bluetooth connection to robot
 		if (!isConnected()) {
-			PApplet.println("Can't send command no connection");
+			System.out.println("Can't send command no connection");
 			return false;
 		}
 		
@@ -183,6 +186,7 @@ public class Robot {
 		try {
 			response = _serialData.take();
 		} catch (InterruptedException e) {
+			System.out.println("Connection error: InterruptedException");
 			return false;
 		}
 
@@ -192,6 +196,7 @@ public class Robot {
 			try {
 				response = _serialData.take();
 			} catch (InterruptedException e) {
+				System.out.println("Connection error: InterruptedException");
 				return false;
 			}
 			
@@ -201,6 +206,7 @@ public class Robot {
 				try {
 					response = _serialData.take();
 				} catch (InterruptedException e) {
+					System.out.println("Connection error: InterruptedException");
 					return false;
 				}
 				

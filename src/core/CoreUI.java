@@ -4,6 +4,7 @@ import java.util.concurrent.*;
 import controlP5.*;
 import org.gicentre.utils.stat.*;
 
+import at.mukprojects.console.Console;
 import map.Map;
 import processing.core.*;
 import processing.serial.Serial;
@@ -16,6 +17,7 @@ public class CoreUI extends PApplet {
 	int Wall_Distance_MM = 180;
 	int Num_Grid_Cells = 5;
 	float Wall_Threshold_Percent = 1.2f;
+	final int BAUD_RATE = 9600;
 	
 	Direction Side_Doors_Are_On;
 	boolean Is_World_Cyclic;
@@ -23,15 +25,13 @@ public class CoreUI extends PApplet {
 	/* Detail about the robot */
 	Robot robot;
 	
-	
-	
 	/* ------------------------------------------------------ */
 	
+	
 	public void settings() {
-		
 		size(1200, 800);
-		
 	}
+	
 	
 	public void setup() {
 		
@@ -62,13 +62,16 @@ public class CoreUI extends PApplet {
 		barChart.setData(map.getProbabilityList());
 	}
 	
+	
 	public void postRobotMotion (boolean result, int value, Direction direction) {
 		
 	}
 	
+	
 	public void postRobotSensing (boolean result) {
 		
 	}
+	
 	
 	public void setupUserInterface() {
 		
@@ -76,7 +79,6 @@ public class CoreUI extends PApplet {
 		cp5 = new ControlP5(this);
 		ArialFont20 = createFont("arial", 20, true);
 		ArialFont14 = createFont("arial", 14, true);
-		
 		
 		/* Bar chart  setup ----------------------------------------------------------- */
 		barChart = new BarChart(this);
@@ -89,13 +91,13 @@ public class CoreUI extends PApplet {
 		barChartWidth = width-400;
 		barChartHeight = height -200;
 		barChartX = 50;
-		barChartY = 50;
+		barChartY = 20;
 		
 		/* control value field -------------------------------------------------------- */
-		controlValueHeight = 50;
+		controlValueHeight = 35;
 		controlValueWidth = barChartWidth/8;
 		controlValueX = barChartX;
-		controlValueY = barChartHeight + 100;
+		controlValueY = barChartY + barChartHeight + 8;
 		controlValue = cp5.addTextfield("Value")
 				.setPosition(controlValueX, controlValueY)
 				.setSize(controlValueWidth, controlValueHeight)
@@ -108,10 +110,10 @@ public class CoreUI extends PApplet {
 					.setSize(14);
 		
 		/* control button bar at bottom ----------------------------------------------- */
-		controlBtnBarHeight = 50;
+		controlBtnBarHeight = 35;
 		controlBtnBarWidth = (barChartWidth/8) * 7 ;
 		controlBtnBarX = controlValueX + controlValueWidth + 20;
-		controlBtnBarY = barChartHeight + 100;
+		controlBtnBarY = barChartY + barChartHeight + 8;
 		
 		controlBtnBar = cp5.addButtonBar("controlBtnBar")
 				 .setPosition(controlBtnBarX, controlBtnBarY)
@@ -122,9 +124,17 @@ public class CoreUI extends PApplet {
 		int standardFieldHeight = 35;
 		int standardFieldWidth = (spaceBetweenChartAndEnd / 3) * 2;
 		
+		/* console at bottom --------------------------------------------------------- */
+		console = new Console(this);
+		console.start();
+		consoleWidth = (controlBtnBarX+controlBtnBarWidth) - controlValueX ;
+		consoleY = controlBtnBarY + controlBtnBarHeight + 20;
+		consoleHeight = height;
+		consoleX = barChartX;
+		
 		/* connection port field ----------------------------------------------------- */
 		connectionPortHeight = standardFieldHeight;
-		connectionPortWidth = (standardFieldWidth / 3) * 2;
+		connectionPortWidth = ((standardFieldWidth / 3) * 2) - 10;
 		connectionPortX = (barChartX + barChartWidth) + 100;
 		connectionPortY = (height / 20) * 1;
 		connectionPort = cp5.addTextfield("connectionPort")
@@ -138,11 +148,13 @@ public class CoreUI extends PApplet {
 		connectionPort.getCaptionLabel()
 					  .setSize(14);
 		
+		connectionPort.setText("/dev/tty.HC-05-DevB");
+		
 		/* connect button ------------------------------------------------------------ */
 		connectButtonHeight = standardFieldHeight;
-		connectButtonWidth = standardFieldWidth;
-		connectButtonX = (barChartX + barChartWidth) + 100;
-		connectButtonY = ((height / 20) * 19) - 30;
+		connectButtonWidth = ((standardFieldWidth / 3) * 1) -10;
+		connectButtonX = (connectionPortX + connectionPortWidth) + 20;
+		connectButtonY = (height / 20) * 1;
 		connectButton = cp5.addButton("connectButton")
 					   .setPosition(connectButtonX, connectButtonY)
 					   .setSize(connectButtonWidth, connectButtonHeight)
@@ -327,6 +339,7 @@ public class CoreUI extends PApplet {
 					  .setSize(14);
 	}
 	
+	
 	public void setupListeners() {
 		
 		controlBtnBar.onClick(new CallbackListener () {
@@ -382,13 +395,38 @@ public class CoreUI extends PApplet {
 			}
 		});
 		
+		
+		connectButton.onClick(new CallbackListener () {
+
+			@Override
+			public void controlEvent(CallbackEvent ev) {
+				
+				String portName = connectionPort.getText();
+				
+				if (portName.isEmpty()) {
+					System.out.println("No port name provided");
+					connectButton.setColorBackground(color(255, 80, 80));
+				}
+				else {
+					boolean result = robot.connect(portName, BAUD_RATE);
+				}
+			}
+			
+		});
+		
 	}
+	
 	
 	public void draw() {
 		background(255);
-		barChart.draw(barChartX, barChartY, barChartWidth, barChartHeight); 
+		
+		
+		
+		barChart.draw(barChartX, barChartY, barChartWidth, barChartHeight);
+		console.draw(consoleX, consoleY, consoleWidth, consoleHeight, 14, 14);
 		
 	}
+	
 	
 	public void drawDistribution() {
 		
@@ -399,6 +437,7 @@ public class CoreUI extends PApplet {
 	private StringBuffer bufferString;
 	private boolean finishStrBuild = true;
 	/* -------------------------------------------------------------------------------*/
+	
 	
 	public void serialEvent(Serial port) {
 		
@@ -423,8 +462,14 @@ public class CoreUI extends PApplet {
 		}
 	}
 	
+	
 	/* User Interface Variables */
-	/* Details about the chart to be displayed and general UI */
+	Console console;
+	int consoleWidth;
+	int consoleHeight;
+	int consoleX;
+	int consoleY;
+	
 	BarChart barChart;
 	int barChartWidth;
 	int barChartHeight;
