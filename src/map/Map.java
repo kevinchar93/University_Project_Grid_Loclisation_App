@@ -14,7 +14,7 @@ public class Map {
 	
 	List<MapCell> _grid;
 	
-	public Map (int mapSize, int[] doorPositions) {
+	public void init (int mapSize, int[] doorPositions) {
 		
 		// create list of size mapSize
 		_grid = new ArrayList<>(mapSize);

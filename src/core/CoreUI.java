@@ -12,17 +12,29 @@ import robot.*;
 
 public class CoreUI extends PApplet {
 	
-	/* Details about the environment the robot is in */
+	/* Details about various settings*/
 	int Grid_Size_MM = 300;
 	int Wall_Distance_MM = 180;
-	int Num_Grid_Cells = 5;
 	float Wall_Threshold_Percent = 1.2f;
-	final int BAUD_RATE = 9600;
+	int BAUD_RATE = 9600;
 	
-	Direction Side_Doors_Are_On;
+	int World_Size_Grid_Cells = 5;
+	int[] doorPositionsArray;
 	boolean Is_World_Cyclic;
 	
-	/* Detail about the robot & world */
+	float Sensor_Hit_Product;
+	float Sensor_Miss_Product;
+	
+	float Prob_Motion_Exact;
+	float Prob_Motion_Over;
+	float Prob_Motion_Under;
+	
+	Direction Side_Doors_Are_On;
+	
+	
+	
+	boolean SETTINGS_INITIALISED = false;
+	
 	Robot robot;
 	Map map;
 	/* ------------------------------------------------------ */
@@ -39,9 +51,10 @@ public class CoreUI extends PApplet {
 		setupUserInterface();
 		setupListeners(); 
 		robot = new Robot(this, serialData);
+		map = new Map();
 		
 		int[] doors = {1, 2};
-		map = new Map(Num_Grid_Cells, doors);
+		map.init(World_Size_Grid_Cells, doors);
 		System.out.println(map);
 		
 		map.setSensorModel(0.9, 0.1);
@@ -117,6 +130,9 @@ public class CoreUI extends PApplet {
 				 .setPosition(controlBtnBarX, controlBtnBarY)
 			 	 .setSize(controlBtnBarWidth, controlBtnBarHeight)
 			 	 .addItems(split("Move Left, Sense, Move Right", ","));
+		
+		controlBtnBar.getValueLabel()
+					 .setSize(14);
 		
 		int spaceBetweenChartAndEnd = width - (barChartX + barChartWidth);
 		int standardFieldHeight = 35;
@@ -206,7 +222,7 @@ public class CoreUI extends PApplet {
 						   .setColorLabel(color(0))
 						   .setSpacingColumn(cyclicWorldWidth)
 						   .addItem("Cyclic", 1)
-						   .addItem("Non Cyclic", 0);
+						   .addItem("Non Cyclic", 2);
 		
 		cyclicWorld.getItem(0)
 				   .getCaptionLabel()
@@ -311,7 +327,7 @@ public class CoreUI extends PApplet {
 						   .setColorLabel(color(0))
 						   .setSpacingColumn(cyclicWorldWidth)
 						   .addItem("Left", 1)
-						   .addItem("Right", 0);
+						   .addItem("Right", 2);
 				
 		doorSide.getItem(0)
 			    .getCaptionLabel()
@@ -421,6 +437,260 @@ public class CoreUI extends PApplet {
 			
 		});
 		
+		
+		// set button functionality
+		setButton.onClick(new CallbackListener () {
+
+			@Override
+			public void controlEvent(CallbackEvent ev) {
+				String text;
+				int intValue;
+				float floatValue;
+				
+				/* get, verify and set world size -------------------------------------------- /
+				text = worldSize.getText();
+				
+				if (!text.isEmpty()) {
+					try {
+						intValue = Integer.parseInt(text);
+						if (intValue > 0) {
+							Num_Grid_Cells = intValue;
+						}
+						else {
+							System.out.println("World size must be greater than 0");
+							setButton.setColorBackground(color(255, 80, 80));
+							return;
+						}
+					}
+					catch (NumberFormatException  e) {
+						System.out.println("Valid integer was not provided as world size");
+						setButton.setColorBackground(color(255, 80, 80));
+						return;
+					}
+				}
+				else {
+					System.out.println("No world size provided");
+					setButton.setColorBackground(color(255, 80, 80));
+					return;
+				}
+				
+				/* get, verify and set door positions -------------------------------------------- /
+				text = doorPositions.getText();
+				
+				if (!text.isEmpty()) {
+					String[] strNums = text.split(",");
+					int[] intNums = new int[strNums.length];
+					
+					for (int i = 0; i < strNums.length; i++) {
+						try {
+							intValue = Integer.parseInt(strNums[i]);
+							if (intValue >= 0) {
+								intNums[i] = intValue;
+							}
+							else {
+								System.out.println("Door positons must be 0 or greater");
+								setButton.setColorBackground(color(255, 80, 80));
+								return;
+							}
+						}
+						catch (NumberFormatException  e) {
+							System.out.println("Valid integer/s not provided for door positions");
+							setButton.setColorBackground(color(255, 80, 80));
+							return;
+						}
+					}
+					doorPositionsArray = intNums;
+				}
+				else {
+					System.out.println("No door positions were given");
+					setButton.setColorBackground(color(255, 80, 80));
+					return;
+				}
+				
+				// get, verify and set cyclic or non cyclic world -------------------------------------------- /
+				final int CYCLIC_SELECTED = 1;
+				final int NON_CYCLIC_SELECTED = 2;
+				intValue = (int) cyclicWorld.getValue();
+				
+				switch (intValue) {
+				
+					case CYCLIC_SELECTED:
+						Is_World_Cyclic = true;
+						break;
+					case NON_CYCLIC_SELECTED:
+						Is_World_Cyclic = false;
+						break;
+					default:
+						System.out.println("No selection for if world is cyclic");
+						setButton.setColorBackground(color(255, 80, 80));
+						return;
+				}
+				
+				// get, verify and set sensor hit product -------------------------------------------- /
+				text = senseHitProduct.getText();
+				
+				if (!text.isEmpty()) {
+					try {
+						floatValue = Float.parseFloat(text);
+						if (floatValue > 0) {
+							Sensor_Hit_Product = floatValue;
+						}
+						else {
+							System.out.println("Hit product must be greater than 0");
+							setButton.setColorBackground(color(255, 80, 80));
+							return;
+						}
+					}
+					catch (NumberFormatException  e) {
+						System.out.println("Valid float was not provided as hit product");
+						setButton.setColorBackground(color(255, 80, 80));
+						return;
+					}
+				}
+				else {
+					System.out.println("No hit product provided");
+					setButton.setColorBackground(color(255, 80, 80));
+					return;
+				}
+				
+				// get, verify and set sensor miss product -------------------------------------------- /
+				text = senseMissProduct.getText();
+				
+				if (!text.isEmpty()) {
+					try {
+						floatValue = Float.parseFloat(text);
+						if (floatValue > 0) {
+							Sensor_Miss_Product = floatValue;
+						}
+						else {
+							System.out.println("Miss product must be greater than 0");
+							setButton.setColorBackground(color(255, 80, 80));
+							return;
+						}
+					}
+					catch (NumberFormatException  e) {
+						System.out.println("Valid float was not provided as miss product");
+						setButton.setColorBackground(color(255, 80, 80));
+						return;
+					}
+				}
+				else {
+					System.out.println("No miss product provided");
+					setButton.setColorBackground(color(255, 80, 80));
+					return;
+				}
+				
+				// get, verify and set probability exact motion -------------------------------------------- /
+				text = probExactMotion.getText();
+				
+				if (!text.isEmpty()) {
+					try {
+						floatValue = Float.parseFloat(text);
+						if (floatValue >= 0 && floatValue <= 1) {
+							Prob_Motion_Exact = floatValue;
+						}
+						else {
+							System.out.println("Probability of exact motion must be between 0 and 1 (inclusive)");
+							setButton.setColorBackground(color(255, 80, 80));
+							return;
+						}
+					}
+					catch (NumberFormatException  e) {
+						System.out.println("Valid float was not provided as probability of exact motion");
+						setButton.setColorBackground(color(255, 80, 80));
+						return;
+					}
+				}
+				else {
+					System.out.println("No probability of exact motion provided");
+					setButton.setColorBackground(color(255, 80, 80));
+					return;
+				}
+				
+				// get, verify and set probability motion overshoot -------------------------------------------- /
+				text = probInexactMotionOver.getText();
+				
+				if (!text.isEmpty()) {
+					try {
+						floatValue = Float.parseFloat(text);
+						if (floatValue >= 0 && floatValue <= 1) {
+							Prob_Motion_Over = floatValue;
+						}
+						else {
+							System.out.println("Probability of motion overshoot must be between 0 and 1 (inclusive)");
+							setButton.setColorBackground(color(255, 80, 80));
+							return;
+						}
+					}
+					catch (NumberFormatException  e) {
+						System.out.println("Valid float was not provided as probability of motion overshoot");
+						setButton.setColorBackground(color(255, 80, 80));
+						return;
+					}
+				}
+				else {
+					System.out.println("No probability of motion overshoot provided");
+					setButton.setColorBackground(color(255, 80, 80));
+					return;
+				}
+				
+				// get, verify and set probability motion undershoot -------------------------------------------- /
+				text = probInexactMotionUnder.getText();
+				
+				if (!text.isEmpty()) {
+					try {
+						floatValue = Float.parseFloat(text);
+						if (floatValue >= 0 && floatValue <= 1) {
+							Prob_Motion_Under = floatValue;
+						}
+						else {
+							System.out.println("Probability of motion undershoot must be between 0 and 1 (inclusive)");
+							setButton.setColorBackground(color(255, 80, 80));
+							return;
+						}
+					}
+					catch (NumberFormatException  e) {
+						System.out.println("Valid float was not provided as probability of motion undershoot");
+						setButton.setColorBackground(color(255, 80, 80));
+						return;
+					}
+				}
+				else {
+					System.out.println("No probability of motion undershoot provided");
+					setButton.setColorBackground(color(255, 80, 80));
+					return;
+				}
+				
+				// check that motion probabilities sum to 1  -------------------------------------------- /
+				if ((Prob_Motion_Exact + Prob_Motion_Over + Prob_Motion_Under) != 1) {
+					System.out.println("Total probability of exact motion, motion over/under shoot must equal 1");
+					setButton.setColorBackground(color(255, 80, 80));
+					return;
+				}
+				
+				// get, verify and set set side door is on -------------------------------------------- /
+				final int DOOR_ON_LEFT = 1;
+				final int DOOR_ON_RIGHT = 2;
+				intValue = (int) doorSide.getValue();
+				
+				switch (intValue) {
+				
+					case DOOR_ON_LEFT:
+						Side_Doors_Are_On = Direction.LEFT;
+						break;
+					case DOOR_ON_RIGHT:
+						Side_Doors_Are_On = Direction.RIGHT;
+						break;
+					default:
+						System.out.println("No selection for what side doors are on");
+						setButton.setColorBackground(color(255, 80, 80));
+						return;
+				}
+				
+				// set variable indicating that everything has been setup -------------------------------------------- */
+			}
+			
+		});
 	}
 	
 	
@@ -571,3 +841,4 @@ public class CoreUI extends PApplet {
 	int setButtonX;
 	int setButtonY;
 }
+ 
