@@ -21,12 +21,15 @@ public class Robot {
 	private final String INS_DATA_AVAIL = "INS_DATA_AVAIL";
 	private final String INS_ERR_CONNECT = "INS_ERR_CONNECT";
 	
-	public Robot (PApplet parent, int gridSize, int wallDistance, float threshold, BlockingQueue<String> serialData) {
+	public Robot (PApplet parent,  BlockingQueue<String> serialData) {
 		_parent = parent;
+		_serialData = serialData;
+	}
+	
+	public void init(int gridSize, int wallDistance, float threshold) {
 		_gridSize = gridSize;
 		_wallDistance = wallDistance;
 		_wallThreshold = threshold;
-		_serialData = serialData;
 	}
 	
 	

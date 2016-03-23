@@ -22,9 +22,9 @@ public class CoreUI extends PApplet {
 	Direction Side_Doors_Are_On;
 	boolean Is_World_Cyclic;
 	
-	/* Detail about the robot */
+	/* Detail about the robot & world */
 	Robot robot;
-	
+	Map map;
 	/* ------------------------------------------------------ */
 	
 	
@@ -37,13 +37,11 @@ public class CoreUI extends PApplet {
 		
 		
 		setupUserInterface();
-		
 		setupListeners(); 
+		robot = new Robot(this, serialData);
 		
-		//Robot robot = new Robot(this, Grid_Size_MM, Wall_Distance_MM, Wall_Threshold_Percent, serialData);
-		//robot.connect("/dev/tty.HC-05-DevB", 9600);
 		int[] doors = {1, 2};
-		Map map = new Map(Num_Grid_Cells, doors);
+		map = new Map(Num_Grid_Cells, doors);
 		System.out.println(map);
 		
 		map.setSensorModel(0.9, 0.1);
@@ -342,6 +340,7 @@ public class CoreUI extends PApplet {
 	
 	public void setupListeners() {
 		
+		// control bar buttons functionality
 		controlBtnBar.onClick(new CallbackListener () {
 
 			@Override
@@ -395,7 +394,7 @@ public class CoreUI extends PApplet {
 			}
 		});
 		
-		
+		// connect button functionality
 		connectButton.onClick(new CallbackListener () {
 
 			@Override
@@ -409,6 +408,14 @@ public class CoreUI extends PApplet {
 				}
 				else {
 					boolean result = robot.connect(portName, BAUD_RATE);
+					if (result) {
+						System.out.println("Connection Successful");
+						connectButton.setColorBackground(color(0, 204, 102));
+					}
+					else {
+						System.out.println("Could not connect");
+						connectButton.setColorBackground(color(255, 80, 80));
+					}
 				}
 			}
 			
