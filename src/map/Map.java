@@ -5,7 +5,7 @@ import robot.Direction;
 
 public class Map {
 
-	double _matchScaleFactor;
+	double _hitScaleFactor;
 	double _missScaleFactor;
 	
 	double _probCorrectMotion;
@@ -29,23 +29,19 @@ public class Map {
 			if (_grid.size() > idx) {
 				MapCell cell = _grid.get(idx);
 				cell._isDoor = true;
-				_grid.set(idx, cell);
+				//_grid.set(idx, cell);
 			}
 		}
 	}
 	
 	
-	public void setSensorModel(double matchScaleFactor, double missScaleFactor) {
-		_matchScaleFactor = matchScaleFactor;
+	public void setSensorModel(double hitScaleFactor, double missScaleFactor) {
+		_hitScaleFactor = hitScaleFactor;
 		_missScaleFactor = missScaleFactor;
 	}
 	
 	
-	public void setMotionModel(double correctMotion, double underShoot, double overShoot ) throws Exception {
-		
-		if (1 != (correctMotion+underShoot+overShoot)) {
-			throw new Exception();
-		}
+	public void setMotionModel(double correctMotion, double underShoot, double overShoot ) {
 		
 		_probCorrectMotion = correctMotion;
 		_probIncorrectMotion_Undershoot = underShoot;
@@ -92,7 +88,7 @@ public class Map {
 			MapCell cell = _grid.get(i);
 			if (doorMeasurement == cell._isDoor) {
 				// cell matches measurement, apply match product
-				cell._belief *= _matchScaleFactor;
+				cell._belief *= _hitScaleFactor;
 			}
 			else {
 				// cell doesn't match measurement, apply miss product
@@ -121,6 +117,7 @@ public class Map {
 		
 		return "[ "+joiner.toString()+" ]";
 	}
+	
 	
 	public float[] getProbabilityList() {
 		

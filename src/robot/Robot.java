@@ -26,8 +26,8 @@ public class Robot {
 		_serialData = serialData;
 	}
 	
-	public void init(int gridSize, int wallDistance, float threshold) {
-		_gridSize = gridSize;
+	public void init(int gridCellSize, int wallDistance, float threshold) {
+		_gridSize = gridCellSize;
 		_wallDistance = wallDistance;
 		_wallThreshold = threshold;
 	}
