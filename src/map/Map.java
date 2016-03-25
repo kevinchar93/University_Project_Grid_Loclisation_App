@@ -49,7 +49,7 @@ public class Map {
 	}
 	
 	
-	public void motionUpdate(int motionVal, final Direction dir) {
+	public void motionUpdate(int motionVal, final Direction dir, boolean isWorldCyclic) {
 		
 		// If direction is left we will be shifting by negative amount
 		if (Direction.LEFT == dir) {

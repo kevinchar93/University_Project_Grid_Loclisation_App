@@ -86,11 +86,19 @@ public class CoreUI extends PApplet {
 	
 	public void postRobotMotion (boolean result, int value, Direction direction) {
 		
+		// Only update the distribution if the motion was successful
+		if (result) {
+			map.motionUpdate(value, direction, Is_World_Cyclic);
+			DISTRIBUTION_CHANGED = true;
+		}
 	}
 	
 	
 	public void postRobotSensing (boolean result) {
 		
+		// update based on whether a door was detected
+		map.sensorUpdate(result);
+		DISTRIBUTION_CHANGED = true;
 	}
 	
 	
@@ -470,11 +478,11 @@ public class CoreUI extends PApplet {
 						if(resultStr.equals(DOOR_DETECTED) || resultStr.equals(NO_DOOR_DETECTED)) {
 							result = resultStr.equals(DOOR_DETECTED);
 							postRobotSensing(result);
+							System.out.println("Sense");
 						}
 						else {
-							// error message to console
+							System.out.println("An Error Occured");
 						}
-						System.out.println("Sense");
 						break;
 							
 					case MOVE_RIGHT:
