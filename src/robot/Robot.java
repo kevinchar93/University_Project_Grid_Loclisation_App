@@ -219,7 +219,7 @@ public class Robot {
 				float heading = Float.parseFloat(measurement[1]);
 				
 				// if distance we want to travel is more than distance available, we cannot move
-				if (DIST_TO_TRAVEL > distAvail) {
+				if (DIST_TO_TRAVEL > distAvail*10) {
 					return false;
 				}
 				else {
@@ -292,13 +292,15 @@ public class Robot {
 				String[] measurement = PApplet.splitTokens(response, ":"); 
 				final int dist = Integer.parseInt(measurement[0]);
 				final float heading = Float.parseFloat(measurement[1]);
-				System.out.println(dist);
+				
 				// check to see if measurement is over the threshold, meaning a door is present
-				if ((10*dist) > (_wallDistance *= _wallThreshold)) {
+				if ((10*dist) > (_wallDistance + _wallThreshold)) {
+					System.out.println(String.format("Door detected, dist: %d", dist*10));
 					return DOOR_DETECTED;
 				}
 				else {
 					// otherwise no door is present (next to wall)
+					System.out.println(String.format("Wall detected, dist: %d", dist));
 					return NO_DOOR_DETECTED;
 				}
 			}

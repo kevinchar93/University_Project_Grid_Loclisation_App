@@ -17,6 +17,7 @@ public class CoreUI extends PApplet {
 	int Wall_Distance_MM = 180;
 	float Wall_Threshold_Percent = 1.2f;
 	int Baud_Rate = 9600;
+	boolean connectedToRobot = false;
 	
 	int World_Size_Num_Grid_Cells = 5;
 	int[] Door_Positions;
@@ -30,7 +31,6 @@ public class CoreUI extends PApplet {
 	float Prob_Motion_Under;
 	
 	Direction Side_Doors_Are_On;
-	
 	
 	
 	boolean SETTINGS_INITIALISED = false;
@@ -54,6 +54,7 @@ public class CoreUI extends PApplet {
 		setupUserInterface();
 		setupListeners(); 
 	}
+	
 	
 	public void draw() {
 		
@@ -83,6 +84,7 @@ public class CoreUI extends PApplet {
 		// Draw the console on every frame
 		console.draw(consoleX, consoleY, consoleWidth, consoleHeight, 14, 14);
 	}
+	
 	
 	public void postRobotMotion (boolean result, int value, Direction direction) {
 		
@@ -257,12 +259,14 @@ public class CoreUI extends PApplet {
 								  .setPosition(measurementThresholdX, measurementThresholdY)
 								  .setSize(measurementThresholdWidth, measurementThresholdHeight)
 								  .setFont(ArialFont14)
-								  .setCaptionLabel("% Threshold")
+								  .setCaptionLabel("Threshold MM")
 								  .setColorCaptionLabel(0)
 								  .setColor(this.color(255, 255, 255));
 		
 		measurementThreshold.getCaptionLabel()
 		  			 		.setSize(standardLabelTextSize);
+		
+		measurementThreshold.setText("20");
 		
 		/* world size field ---------------------------------------------------------- */
 		int worldSizeHeight = standardFieldHeight;
@@ -337,6 +341,8 @@ public class CoreUI extends PApplet {
 		senseHitProduct.getCaptionLabel()
 					  .setSize(standardLabelTextSize);
 		
+		senseHitProduct.setText("0.9");
+		
 		/* sensor miss field ------------------------------------------------------- */
 		int senseMissProductHeight = standardFieldHeight;
 		int senseMissProductWidth = standardFieldWidth;
@@ -352,6 +358,8 @@ public class CoreUI extends PApplet {
 		
 		senseMissProduct.getCaptionLabel()
 					  .setSize(standardLabelTextSize);
+		
+		senseMissProduct.setText("0.2");
 		
 		/* probability exact motion ------------------------------------------------ */
 		int probExactMotionHeight = standardFieldHeight;
@@ -369,6 +377,8 @@ public class CoreUI extends PApplet {
 		probExactMotion.getCaptionLabel()
 					  .setSize(standardLabelTextSize);
 		
+		probExactMotion.setText("0.8");
+		
 		/* probability motion overshoot -------------------------------------------- */
 		int probInexactMotionOverHeight = standardFieldHeight;
 		int probInexactMotionOverWidth = standardFieldWidth;
@@ -385,6 +395,8 @@ public class CoreUI extends PApplet {
 		probInexactMotionOver.getCaptionLabel()
 					  .setSize(standardLabelTextSize);
 		
+		probInexactMotionOver.setText("0.1");
+		
 		/* probability motion undershoot ------------------------------------------- */
 		int probInexactMotionUnderHeight = standardFieldHeight;
 		int probInexactMotionUnderWidth = standardFieldWidth;
@@ -400,6 +412,8 @@ public class CoreUI extends PApplet {
 		
 		probInexactMotionUnder.getCaptionLabel()
 					  .setSize(standardLabelTextSize);
+		
+		probInexactMotionUnder.setText("0.1");
 		
 		/* door side check box ----------------------------------------------------- */
 		int doorSideHeight = standardFieldHeight;
@@ -449,6 +463,11 @@ public class CoreUI extends PApplet {
 			@Override
 			public void controlEvent(CallbackEvent ev) {
 				
+				if (false == connectedToRobot) {
+					System.out.println("Must connect to robot before sending a command");
+					return;
+				}
+				
 				ButtonBar bar = (ButtonBar)ev.getController();
 				
 				final String strValue = controlValue.getText();
@@ -470,7 +489,9 @@ public class CoreUI extends PApplet {
 					case MOVE_LEFT:
 						result = robot.move(gridSpaces, Direction.LEFT, isCyclic);
 						postRobotMotion(result, gridSpaces, Direction.LEFT);
-						System.out.println("Move left " + gridSpaces);
+						if (result) {
+							System.out.println("Move left " + gridSpaces);
+						}
 						break;
 						
 					case SENSE:
@@ -478,17 +499,18 @@ public class CoreUI extends PApplet {
 						if(resultStr.equals(DOOR_DETECTED) || resultStr.equals(NO_DOOR_DETECTED)) {
 							result = resultStr.equals(DOOR_DETECTED);
 							postRobotSensing(result);
-							System.out.println("Sense");
 						}
 						else {
-							System.out.println("An Error Occured");
+							System.out.println(resultStr);
 						}
 						break;
 							
 					case MOVE_RIGHT:
 						result = robot.move(gridSpaces, Direction.RIGHT, isCyclic);
 						postRobotMotion(result, gridSpaces, Direction.RIGHT);
-						System.out.println("Move right " + gridSpaces);
+						if (result) {
+							System.out.println("Move right " + gridSpaces);
+						}
 						break;
 						
 					default:
@@ -537,6 +559,7 @@ public class CoreUI extends PApplet {
 				else {
 					boolean result = robot.connect(portName, Baud_Rate);
 					if (result) {
+						connectedToRobot = true;
 						System.out.println("Connection Successful");
 						connectButton.setColorBackground(color(0, 204, 102));
 					}
@@ -598,11 +621,11 @@ public class CoreUI extends PApplet {
 					for (int i = 0; i < strNums.length; i++) {
 						try {
 							intValue = Integer.parseInt(strNums[i]);
-							if (intValue >= 0) {
-								intNums[i] = intValue;
+							if (intValue > 0) {
+								intNums[i] = intValue-1;
 							}
 							else {
-								System.out.println("Door positons must be 0 or greater");
+								System.out.println("Door positons must be greater than 0 (1 based indexed)");
 								setButton.setColorBackground(color(255, 80, 80));
 								return;
 							}

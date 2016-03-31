@@ -29,7 +29,6 @@ public class Map {
 			if (_grid.size() > idx) {
 				MapCell cell = _grid.get(idx);
 				cell._isDoor = true;
-				//_grid.set(idx, cell);
 			}
 		}
 	}
@@ -58,23 +57,65 @@ public class Map {
 		
 		List<MapCell> _newGrid = new ArrayList<>(_grid.size());
 		
-		for (int i = 0; i < _grid.size(); i++) {
-			
-			// calculate probability after motion from corresponding cells
-			// (all the cells that could have gotten us to newCell)
-			int idxExact = Map.mod(i-motionVal, _grid.size());
-			int idxUndershoot  = Map.mod(i-motionVal -1, _grid.size());
-			int idxOvershoot  = Map.mod(i-motionVal +1, _grid.size());
-			
-			// multiply the beliefs for each type of motion by respective probability
-			double probExact = _grid.get(idxExact)._belief * _probCorrectMotion;
-			double probUndershoot = _grid.get(idxUndershoot)._belief * _probIncorrectMotion_Undershoot;
-			double probOvershoot = _grid.get(idxOvershoot)._belief * _probIncorrectMotion_Overshoot;
-			
-			MapCell newCell = new MapCell(probExact + probUndershoot + probOvershoot, _grid.get(i)._isDoor);
-			_newGrid.add(newCell);
-		}
 		
+		// perform convolution in cyclic world
+		if (true == isWorldCyclic) {
+			for (int i = 0; i < _grid.size(); i++) {
+				
+				// calculate probability after motion from corresponding cells
+				// (all the cells that could have gotten us to newCell)
+				int idxExact = Map.mod(i-motionVal, _grid.size());
+				int idxUndershoot  = Map.mod(i-motionVal -1, _grid.size());
+				int idxOvershoot  = Map.mod(i-motionVal +1, _grid.size());
+				
+				// multiply the beliefs for each type of motion by respective probability
+				double probExact = _grid.get(idxExact)._belief * _probCorrectMotion;
+				double probUndershoot = _grid.get(idxUndershoot)._belief * _probIncorrectMotion_Undershoot;
+				double probOvershoot = _grid.get(idxOvershoot)._belief * _probIncorrectMotion_Overshoot;
+				
+				MapCell newCell = new MapCell(probExact + probUndershoot + probOvershoot, _grid.get(i)._isDoor);
+				_newGrid.add(newCell);
+			}
+		}
+		else {
+			
+			// perform convolution in non-cyclic world
+			double probabilitySum = 0;
+			
+			for (int i = 0; i < _grid.size(); i++) {
+				
+				// calculate probability after motion from corresponding cells
+				// (all the cells that could have gotten us to newCell, NOTE values
+				//  are NOT being wrapped to fit in the world)
+				int idxExact	  = i-motionVal;
+				int idxUndershoot = i-motionVal -1;
+				int idxOvershoot  = i-motionVal +1;
+				
+				// get the current belief at these indices, if the index is outside
+				// the bounds of the grid then a belief of 0 (impossible) is set
+				double idxExactBelief 		= (idxExact>= 0 && idxExact < _grid.size()) ? _grid.get(idxExact)._belief : 0;
+				double idxUndershootBelief 	= (idxUndershoot>= 0 && idxUndershoot < _grid.size()) ? _grid.get(idxUndershoot)._belief : 0;
+				double idxOvershootBelief 	= (idxOvershoot>= 0 && idxOvershoot < _grid.size()) ? _grid.get(idxOvershoot)._belief : 0;
+				
+				// multiply the beliefs for each type of motion by respective probability
+				double probExact = idxExactBelief * _probCorrectMotion;
+				double probUndershoot = idxUndershootBelief * _probIncorrectMotion_Undershoot;
+				double probOvershoot = idxOvershootBelief * _probIncorrectMotion_Overshoot;
+				
+				MapCell newCell = new MapCell(probExact + probUndershoot + probOvershoot, _grid.get(i)._isDoor);
+				_newGrid.add(newCell);
+				
+				// sum probability for normalisation later
+				probabilitySum += probExact + probUndershoot + probOvershoot;
+				
+			}
+			
+			// since the probability of some cells will now be 0 we need to
+			// normalise the probability distribution
+			for (MapCell cell : _newGrid) {
+				cell._belief /= probabilitySum;
+			}
+		}
 		_grid = _newGrid;
 	}
 	
@@ -100,8 +141,7 @@ public class Map {
 		}
 		
 		// normalise the distribution
-		for (int i = 0; i < _grid.size(); i++) {
-			MapCell cell = _grid.get(i);
+		for (MapCell cell : _grid) {
 			cell._belief /= beliefSum;
 		}
 	}
