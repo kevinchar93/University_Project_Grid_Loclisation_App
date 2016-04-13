@@ -147,6 +147,8 @@ public class CoreUI extends PApplet {
 		controlValue.getCaptionLabel()
 					.setSize(standardLabelTextSize);
 		
+		controlValue.setLock(true);
+		
 		/* control button bar at bottom ----------------------------------------------- */
 		int controlBtnBarHeight = 35;
 		int controlBtnBarWidth = (barChartWidth/8) * 7 ;

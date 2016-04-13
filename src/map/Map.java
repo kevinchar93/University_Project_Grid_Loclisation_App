@@ -124,9 +124,8 @@ public class Map {
 		
 		double beliefSum = 0;
 		
-		for (int i = 0; i < _grid.size(); i++) {
+		for (MapCell cell : _grid) {
 			
-			MapCell cell = _grid.get(i);
 			if (doorMeasurement == cell._isDoor) {
 				// cell matches measurement, apply match product
 				cell._belief *= _hitScaleFactor;
