@@ -10,9 +10,9 @@ The project report titled "An Implementation of a Mobile Robot with Localisation
 
 In total for the project 4 deliverables were created (links to repos in brackets):
 * The actual physical robot
-* The software on the robot's embedded platform (Mobile Platform SW)
-* Software used to control the robot remotely & estimate its position (Grid Localisation App)
-* A two dimensional Monte Carlo localisation simulator  (Particle Filter Simulator App)
+* The software on the robot's embedded platform ([Mobile Platform SW](https://github.com/kevinchar93/University_Project_Mobile_Platform_SW))
+* Software used to control the robot remotely & estimate its position ([Grid Localisation App](https://github.com/kevinchar93/University_Project_Grid_Loclisation_App))
+* A two dimensional Monte Carlo localisation simulator  ([Particle Filter Simulator App](https://github.com/kevinchar93/University_Project_Particle_Filter_Simulator_App))
 
 ### More about the Grid Localisation Application
 
