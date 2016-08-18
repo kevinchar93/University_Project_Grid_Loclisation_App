@@ -14,6 +14,8 @@ In total for the project 4 deliverables were created (links to repos in brackets
 * Software used to control the robot remotely & estimate its position ([Grid Localisation App](https://github.com/kevinchar93/University_Project_Grid_Loclisation_App))
 * A two dimensional Monte Carlo localisation simulator  ([Particle Filter Simulator App](https://github.com/kevinchar93/University_Project_Particle_Filter_Simulator_App))
 
+![Robot image lidar](https://github.com/kevinchar93/University_Project_Grid_Loclisation_App/blob/master/robot1.PNG "The Complete Robot")
+
 ### More about the Grid Localisation Application
 
 <more details about the grid localisation in the app>
