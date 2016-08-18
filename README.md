@@ -6,6 +6,8 @@ My final year project at university was inspired somewhat by my placement year w
 
 By the end of the project I'd encountered issues that made me scale down the project. Ultimately I produced a robot that is capable of localising itself in only one dimension, however another piece of software which presents a simple simulation of two dimensional localisation was implemented instead.
 
+The project report titled "An Implementation of a Mobile Robot with Localisation Capabilities" can be found in the root directory of this repo.
+
 In total for the project 4 deliverables were created (links to repos in brackets):
 * The actual physical robot
 * The software on the robot's embedded platform (Mobile Platform SW)
