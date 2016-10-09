@@ -19,6 +19,13 @@ In total for the project 4 deliverables were created (links to repos in brackets
 * Software used to control the robot remotely & estimate its position ([Grid Localisation App](https://github.com/kevinchar93/University_Project_Grid_Loclisation_App))
 * A two dimensional Monte Carlo localisation simulator  ([Particle Filter Simulator App](https://github.com/kevinchar93/University_Project_Particle_Filter_Simulator_App))
 
+## Video of Robot in Action
+<p align="center">
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=uaJJufRfOmI
+" target="_blank"><img src="http://img.youtube.com/vi/uaJJufRfOmI/0.jpg" 
+alt="Zumo Robot in Maze" width="620" height="400" border="10" /></a>
+</p>
+
 ### More about the Grid Localisation App
 
 The "Grid Localisation App" is the piece of software that runs remotely on a laptop, it is used to send control commands to the robot via a Bluetooth connection and present a visual estimate of the robot's position in the form of a histogram. At its core the application uses a version of the Grid Localisation algorithm shown in the diagram below. Algorithm sourced from Thrun, Fox, Wolfram (2005, p239, Probabalistic Robotics).
