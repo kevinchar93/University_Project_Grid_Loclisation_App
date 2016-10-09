@@ -30,7 +30,7 @@ alt="The Basic Grid Localisation Algorithm" width="799" height="544" border="10"
 
 For the purpose of this project it is assumed the robot can only move to the right or left in the world and that it can sense the doors, walls and ends of the world. This specific implementation of Grid Localisation makes use of a simple sensor and motion model presented in Udacity Course CS 373 (Georgia Institute of Technology 2013), in the motion model the robot has a probability of undershooting, overshooting or arriving exactly at its intended target this is used to probabilistically predict what grid cell the robot will be in after a motion. The sensor model specifies multiples that are used to raise or lower the probability that the robot is in a given cell given measurements from the sensor. These simple motion and sensor models were used as they are suitable at this level and developing models that are more specific were outside the scope of the project.
 
-The modified version of the Grid Localisation algorithm implemented in this application:
+Flow chart showing how the Grid Localisation App works:
 <p align="center">
 <img src="https://github.com/kevinchar93/University_Project_Grid_Loclisation_App/blob/master/modified_grid_localisation_algorithm_flowchart.png" 
 alt="The Basic Grid Localisation Algorithm" width="677" height="548" border="10" />
