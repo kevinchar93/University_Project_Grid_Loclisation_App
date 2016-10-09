@@ -1,10 +1,7 @@
-# Grid Localisation Application (Final Year Project)
+# Grid Localisation App (Final Year Project)
 This repo is one of a number from my final year project at university. This in particular is for a piece of software used to control the robot remotely and view an estimate of its position. More specific details about the project and the Grid Localisation App in particular can be found below.
 
-<p align="center">
-<img src="https://github.com/kevinchar93/University_Project_Grid_Loclisation_App/blob/master/robot1.PNG" 
-alt="The Complete Robot" width="480" height="345" border="10" />
-</p>
+![](https://github.com/kevinchar93/University_Project_Grid_Loclisation_App/blob/master/OneDimSim_out.gif)
 
 ### About the Project
 My final year project at university was inspired somewhat by my placement year where I worked on programming embedded systems in the form of TV set top boxes, having had this experience I decided to work on a project that dealt with some form of embedded system. In the end I decided to construct and program a robot capable of localising itself in two dimensions.
